@@ -116,7 +116,7 @@ const Navbar = () => {
 					to="/"
 					className="btn btn-ghost text-2xl font-bold text-primary"
 				>
-					LoanLink
+					Pillar Finance
 				</NavLink>
 			</div>
 

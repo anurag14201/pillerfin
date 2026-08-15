@@ -42,7 +42,7 @@ export default function AboutUs() {
 								Our Story
 							</h3>
 							<p className="text-gray-700 leading-relaxed">
-								LoanLink was born from firsthand experience working with small
+							Pillar Finance was born from firsthand experience working with small
 								NGOs and microfinance groups in developing communities. We saw
 								dedicated teams spending countless hours on paperwork, Excel
 								tracking, and manual follow-ups — time that could be better

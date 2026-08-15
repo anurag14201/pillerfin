@@ -87,7 +87,7 @@ export default function HowItWorks() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            How LoanLink Works
+            How Pillar Finance Works
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             A streamlined, end-to-end process for microloan management — from application to repayment.

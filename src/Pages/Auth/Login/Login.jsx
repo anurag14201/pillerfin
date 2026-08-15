@@ -95,7 +95,7 @@ const Login = () => {
 						<a className="link link-hover">Forgot password?</a>
 					</div>
 					<button className="btn btn-primary mt-4">Login</button>
-					<p className="text-center">New to LoanLink? </p>
+					<p className="text-center">New to Pillar Finance? </p>
 					<Link
 						state={location.state}
 						className="text-center text-primary font-semibold underline"

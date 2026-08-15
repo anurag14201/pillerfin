@@ -22,10 +22,10 @@ export default function AboutLoanLink() {
 						transition={{ duration: 0.8 }}
 					>
 						<h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-							About LoanLink
+							About Pillar Finance
 						</h2>
 						<p className="text-xl text-gray-600 mb-8 leading-relaxed">
-							LoanLink is a purpose-built web platform designed to empower small
+						Pillar Finance is a purpose-built web platform designed to empower small
 							financial organizations, NGOs, and microloan providers with a
 							modern, efficient, and affordable loan management system.
 						</p>
