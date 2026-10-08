@@ -26,7 +26,7 @@ const PaymentSuccess = () => {
 			<p>
 				<span className='font-bold'>Transaction id</span>: {paymentInfo.transactionId}
 			</p>
-			<Link to='/dashboard/my-loans' className='btn btn-primary'>My Loans</Link>
+			<Link to='/dashboard/my-loans' className='btn btn-primary'>My Products</Link>
 		</div>
 	);
 };

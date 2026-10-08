@@ -1,194 +1,247 @@
 import React from 'react';
 import { CgProfile } from 'react-icons/cg';
-import { CiDeliveryTruck, CiMoneyCheck1 } from 'react-icons/ci';
+import { CiMoneyCheck1 } from 'react-icons/ci';
 import { FaUserTie } from 'react-icons/fa';
 import { IoIosAddCircleOutline } from 'react-icons/io';
-import { MdDensitySmall, MdPendingActions, MdVerified } from 'react-icons/md';
+import { MdDensitySmall, MdPendingActions, MdVerified, MdDashboard } from 'react-icons/md';
 import { SiReacthookform } from 'react-icons/si';
 import { VscUnverified } from 'react-icons/vsc';
 import { Link, NavLink, Outlet } from 'react-router';
 import useRole from '../Hooks/useRole';
+import { Sparkles, Menu } from 'lucide-react';
 
 const DashBoardLayout = () => {
-	const {role} = useRole();
+    const { role } = useRole();
+
     return (
-			<div>
-				<div className="drawer lg:drawer-open">
-					<input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-					<div className="drawer-content">
-						{/* Navbar */}
-						<nav className="navbar w-full bg-base-300">
-							<label
-								htmlFor="my-drawer-4"
-								aria-label="open sidebar"
-								className="btn btn-square btn-ghost"
-							>
-								{/* Sidebar toggle icon */}
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									strokeLinejoin="round"
-									strokeLinecap="round"
-									strokeWidth="2"
-									fill="none"
-									stroke="currentColor"
-									className="my-1.5 inline-block size-4"
-								>
-									<path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
-									<path d="M9 4v16"></path>
-									<path d="M14 10l2 2l-2 2"></path>
-								</svg>
-							</label>
-							<Link to="/" className="px-4 text-xl font-bold text-primary">
-								LoanLink
-							</Link>
-						</nav>
-						{/* Page content here */}
-						<Outlet></Outlet>
-					</div>
+        <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-white transition-colors duration-300">
+            <div className="drawer lg:drawer-open">
+                <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
+                <div className="drawer-content flex flex-col min-h-screen">
+                    {/* Top Navbar */}
+                    <nav className="navbar w-full bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border-b border-gray-200/40 dark:border-white/10 px-6 sticky top-0 z-40">
+                        <label
+                            htmlFor="my-drawer-4"
+                            aria-label="open sidebar"
+                            className="btn btn-square btn-ghost lg:hidden text-gray-800 dark:text-white"
+                        >
+                            <Menu className="w-5 h-5" />
+                        </label>
+                        <Link 
+                            to="/" 
+                            className="px-4 text-xl font-bold tracking-tight text-primary flex items-center gap-2 hover:opacity-85 transition-opacity"
+                        >
+                            <Sparkles className="w-5 h-5" />
+                            <span>Aura Dashboard</span>
+                        </Link>
+                    </nav>
 
-					<div className="drawer-side is-drawer-close:overflow-visible">
-						<label
-							htmlFor="my-drawer-4"
-							aria-label="close sidebar"
-							className="drawer-overlay"
-						></label>
-						<div className="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
-							{/* Sidebar content here */}
-							<ul className="menu w-full grow py-15">
-								{/* List item */}
-								
+                    {/* Main Page Content */}
+                    <div className="flex-1 p-6 md:p-10">
+                        <Outlet />
+                    </div>
+                </div>
 
-								{/* List item */}
-								<li className="gap-2">
-									{role === 'Borrower' && (
-										<>
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="My loans"
-												to="/dashboard/my-loans"
-											>
-												<CiMoneyCheck1 />
-												<span className="is-drawer-close:hidden">My Loans</span>
-											</NavLink>
-											{/* my profile */}
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="My Profile"
-												to="/dashBoard/profile"
-											>
-												<CgProfile />
-												<span className="is-drawer-close:hidden">
-													My Profile
-												</span>
-											</NavLink>
-										</>
-									)}
+                {/* Sidebar Drawer */}
+                <div className="drawer-side z-50">
+                    <label
+                        htmlFor="my-drawer-4"
+                        aria-label="close sidebar"
+                        className="drawer-overlay"
+                    ></label>
+                    <div className="flex min-h-full flex-col items-start bg-white dark:bg-zinc-900 border-r border-gray-200/40 dark:border-white/10 w-64 p-6 shadow-xl lg:shadow-none">
+                        
+                        {/* Sidebar Brand Header */}
+                        <div className="flex items-center gap-2 px-2 pb-8 pt-2">
+                            <span className="p-2 bg-primary/10 text-primary rounded-xl">
+                                <Sparkles className="w-5 h-5" />
+                            </span>
+                            <span className="text-lg font-bold tracking-tight">Aura Portal</span>
+                        </div>
 
-									{role === 'Manager' && (
-										<>
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="Add loans"
-												to="/dashboard/add-loan"
-											>
-												<IoIosAddCircleOutline />
-												<span className="is-drawer-close:hidden">
-													Add loans
-												</span>
-											</NavLink>
-											{/* Manage Loans(manager)  */}
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="Manage Loans"
-												to="/dashboard/manage-loans"
-											>
-												<FaUserTie />
-												<span className="is-drawer-close:hidden">
-													Manage Loans
-												</span>
-											</NavLink>
-											{/* Pending Application (manager) */}
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="Pending Application"
-												to="/dashboard/pending-loans"
-											>
-												<MdPendingActions />
-												<span className="is-drawer-close:hidden">
-													Pending Application
-												</span>
-											</NavLink>
-											{/* Approved application(manager) */}
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="Approved Application"
-												to="/dashboard/approved-loans"
-											>
-												<MdVerified />
-												<span className="is-drawer-close:hidden">
-													Approved Application
-												</span>
-											</NavLink>
-											{/* my profile(Manager) */}
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="My Profile"
-												to="/dashboard/manager-profile"
-											>
-												<CgProfile />
-												<span className="is-drawer-close:hidden">
-													My Profile
-												</span>
-											</NavLink>
-										</>
-									)}
+                        {/* Navigation Links */}
+                        <ul className="menu w-full grow gap-2 p-0">
+                            {/* Customer / Borrower Menu */}
+                            {(role === 'Borrower' || role === 'Customer') && (
+                                <>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/my-loans"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <CiMoneyCheck1 className="text-xl" />
+                                            <span>My Orders</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashBoard/profile"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <CgProfile className="text-xl" />
+                                            <span>My Profile</span>
+                                        </NavLink>
+                                    </li>
+                                </>
+                            )}
 
-									{role === 'Admin' && (
-										<>
-											{/* Manage Users(admin) */}
+                            {/* Manager Menu */}
+                            {role === 'Manager' && (
+                                <>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard"
+                                            end
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <MdDashboard className="text-xl" />
+                                            <span>Overview</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/add-loan"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <IoIosAddCircleOutline className="text-xl" />
+                                            <span>Add Products</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/manage-loans"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <FaUserTie className="text-xl" />
+                                            <span>Manage Products</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/pending-loans"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <MdPendingActions className="text-xl" />
+                                            <span>Pending Orders</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/approved-loans"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <MdVerified className="text-xl" />
+                                            <span>Approved Orders</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/manager-profile"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <CgProfile className="text-xl" />
+                                            <span>My Profile</span>
+                                        </NavLink>
+                                    </li>
+                                </>
+                            )}
 
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="Manage Users"
-												to="/dashboard/manage-users"
-											>
-												<VscUnverified />
-												<span className="is-drawer-close:hidden">
-													Manage Users
-												</span>
-											</NavLink>
-											{/* all loans(Admin) */}
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="All Loans"
-												to="/dashboard/all-loans-admin"
-											>
-												<MdDensitySmall />
-												<span className="is-drawer-close:hidden">
-													All Loans
-												</span>
-											</NavLink>
-											{/* Loan Application(admin) */}
-											<NavLink
-												className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-												data-tip="Loan Application"
-												to="/dashboard/loan-application-admin"
-											>
-												<SiReacthookform />
-												<span className="is-drawer-close:hidden">
-													Loan Application
-												</span>
-											</NavLink>
-										</>
-									)}
-								</li>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
+                            {/* Admin Menu */}
+                            {role === 'Admin' && (
+                                <>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard"
+                                            end
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <MdDashboard className="text-xl" />
+                                            <span>Overview</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/manage-users"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <VscUnverified className="text-xl" />
+                                            <span>Manage Users</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/all-loans-admin"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <MdDensitySmall className="text-xl" />
+                                            <span>All Products</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/dashboard/loan-application-admin"
+                                            className={({ isActive }) =>
+                                                isActive
+                                                    ? 'active bg-primary text-white font-semibold rounded-xl py-3 px-4 shadow-md'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl py-3 px-4 transition-colors font-medium'
+                                            }
+                                        >
+                                            <SiReacthookform className="text-xl" />
+                                            <span>All Orders</span>
+                                        </NavLink>
+                                    </li>
+                                </>
+                            )}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default DashBoardLayout;

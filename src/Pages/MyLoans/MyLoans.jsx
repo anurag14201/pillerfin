@@ -8,245 +8,250 @@ import Swal from 'sweetalert2';
 import { FcViewDetails } from 'react-icons/fc';
 
 const MyLoans = () => {
-	const { user } = useAuth();
-	const axiosSecure = useAxiosSecure();
-	const loanModalRef = useRef();
-	const [loanDetailsId, setLoanDetailsId] = useState(null)
+    const { user } = useAuth();
+    const axiosSecure = useAxiosSecure();
+    const loanModalRef = useRef();
+    const [loanDetailsId, setLoanDetailsId] = useState(null);
 
+    const {
+        data: loanApplications = [],
+        isPending,
+        refetch,
+    } = useQuery({
+        queryKey: ['loanApplications', user?.email],
+        enabled: !!user?.email,
+        queryFn: async () => {
+            const res = await axiosSecure.get(
+                `/orders?email=${user.email}`
+            );
+            return res.data;
+        },
+    });
 
-	const {
-		data: loanApplications = [],
-		isPending,
-		refetch,
-	} = useQuery({
-		queryKey: ['loanApplications', user?.email],
-		enabled: !!user?.email,
-		queryFn: async () => {
-			const res = await axiosSecure.get(
-				`/loan-application?email=${user.email}`
-			);
-			return res.data;
-			
-		},
-	});
+    const openLoanModal = loanApplication => {
+        const targetId = loanApplication.loanDetailsId || loanApplication.productId || loanApplication.loanId || loanApplication.itemId || loanApplication._id;
+        setLoanDetailsId(targetId);
+        loanModalRef.current.showModal();
+    };
 
-	const openLoanModal = loanApplication => {
-		setLoanDetailsId(loanApplication.loanDetailsId);
-		loanModalRef.current.showModal();
-	};
+    const { data } = useQuery({
+        queryKey: ['loan-Details', loanDetailsId],
+        enabled: !!loanDetailsId,
+        queryFn: async () => {
+            const res = await axiosSecure.get(`/all-loans/${loanDetailsId}`);
+            return res.data;
+        },
+    });
 
-	const { data } = useQuery({
-		queryKey: ['loan-Details', loanDetailsId],
-		enabled: !!loanDetailsId,
-		queryFn: async () => {
-			const res = await axiosSecure.get(`/all-loans/${loanDetailsId}`);
-			return res.data;
-		},
-	});
+    if (isPending) {
+        return <Loading></Loading>;
+    }
 
-	
-	
-	if (isPending) {
-		return <Loading></Loading>;
-	}
+    const handlePayment = async loanApplication => {
+        try {
+            const unitPrice = data?.price || data?.maxLimit || loanApplication.price || 1200;
+            const quantity = parseInt(loanApplication.loanAmount || loanApplication.quantity) || 1;
+            const calculatedTotal = unitPrice * quantity;
 
-	
+            const result = await Swal.fire({
+                title: 'Proceed to Payment',
+                text: `You will be charged $${calculatedTotal} (${quantity} item(s) @ $${unitPrice} each)!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed!',
+            });
 
-	// const openLoanModal = (loanApplication) => {
-	// 	setLoanDetailsId(loanApplication.loanDetailsId);
-	// 	loanModalRef.current.showModal();
-	// };
+            if (!result.isConfirmed) return;
 
-	const handlePayment = async loanApplication => {
-		try {
-			const result = await Swal.fire({
-				title: 'Are you sure?',
-				text: 'You will be charget $10 for ths!',
-				icon: 'warning',
-				showCancelButton: true,
-				confirmButtonColor: '#3085d6',
-				cancelButtonColor: '#d33',
-				confirmButtonText: 'Yes, proceed!',
-			});
+            const paymentInfo = {
+                orderId: loanApplication._id,
+                orderTrackingId: loanApplication.orderTrackingId,
+                productTitle: loanApplication.loanTitle || loanApplication.title,
+                totalAmount: calculatedTotal,
+                email: loanApplication.email,
+            };
 
-			if (!result.isConfirmed) return;
+            const res = await axiosSecure.post(
+                '/create-checkout-session',
+                paymentInfo
+            );
 
-			const paymentInfo = {
-				loanFee: loanApplication.loanFee,
-				loanId: loanApplication._id,
-				loan_Id: loanApplication.loanId,
-				email: loanApplication.email,
-				loanTitle: loanApplication.loanTitle,
-			};
+            if (res.data.url) {
+                window.location.assign(res.data.url);
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Something went wrong!',
+                text: 'Please try again later',
+            });
+        }
+    };
 
-			const res = await axiosSecure.post(
-				'/create-checkout-session',
-				paymentInfo
-			);
+    const handleDelete = id => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+        }).then(result => {
+            if (result.isConfirmed) {
+                axiosSecure.delete(`/loan-application/${id}/delete`).then(res => {
+                    if (res.data.deletedCount) {
+                        refetch();
+                    }
+                });
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Your order has been deleted.',
+                    icon: 'success',
+                });
+            }
+        });
+    };
 
-			window.location.assign(res.data.url);
-		} catch (error) {
-			console.error(error);
-			Swal.fire({
-				icon: 'error',
-				title: 'Something went wrong!',
-				text: 'Please try again later',
-			});
-		}
-	};
+    return (
+        <div className="max-w-7xl mx-auto p-4 text-gray-900 dark:text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-6">My Orders</h2>
+            <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-xl p-3 sm:p-5">
+                {loanApplications.length === 0 ? (
+                    <p className="font-semibold text-xl sm:text-2xl text-center py-12 text-gray-500">
+                        No orders placed yet.
+                    </p>
+                ) : (
+                    <table className="table w-full text-xs sm:text-sm">
+                        <thead>
+                            <tr className="border-b border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300">
+                                <th>#</th>
+                                <th>Order ID</th>
+                                <th>Product Info</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th className="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loanApplications.map((loanApplication, i) => (
+                                <tr key={loanApplication._id} className="border-b border-gray-100 dark:border-white/5 align-middle">
+                                    <th>{i + 1}</th>
+                                    <td className="font-mono text-[10px] sm:text-xs opacity-80 max-w-[100px] sm:max-w-none truncate">
+                                        {loanApplication.orderTrackingId || loanApplication.loanId || 'AURA-ORDER'}
+                                    </td>
+                                    <td>
+                                        <div className="font-bold text-sm sm:text-base">{loanApplication.loanTitle || loanApplication.title}</div>
+                                        <div className="text-[11px] text-gray-400">Qty: {loanApplication.loanAmount || loanApplication.quantity || 1}</div>
+                                    </td>
+                                    <td className="font-semibold text-primary whitespace-nowrap">
+                                        ${loanApplication.totalAmount || (loanApplication.loanAmount ? loanApplication.loanAmount * 1200 : 'N/A')}
+                                    </td>
+                                    <td>
+                                        <span className={`badge badge-sm sm:badge-md ${loanApplication.paymentStatus === 'paid' ? 'badge-success text-white' : 'badge-warning font-medium'}`}>
+                                            {loanApplication.paymentStatus === 'paid' ? 'Paid' : (loanApplication.loanStatus || 'Pending')}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center justify-start sm:justify-center">
+                                            {loanApplication.paymentStatus === 'paid' ? (
+                                                <span className="text-green-600 font-bold px-2 py-1 text-xs">
+                                                    Paid
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handlePayment(loanApplication)}
+                                                    className="btn btn-secondary text-white btn-xs sm:btn-sm rounded-full px-3"
+                                                >
+                                                    Pay
+                                                </button>
+                                            )}
 
-	const handleDelete = id => {
-		Swal.fire({
-			title: 'Are you sure?',
-			text: "You won't be able to revert this!",
-			icon: 'warning',
-			showCancelButton: true,
-			confirmButtonColor: '#3085d6',
-			cancelButtonColor: '#d33',
-			confirmButtonText: 'Yes, delete it!',
-		}).then(result => {
-			if (result.isConfirmed) {
-				axiosSecure.delete(`/loan-application/${id}/delete`).then(res => {
-					if (res.data.deletedCount) {
-						refetch();
-					}
-				});
-				Swal.fire({
-					title: 'Deleted!',
-					text: 'Your file has been deleted.',
-					icon: 'success',
-				});
-			}
-		});
-	};
+                                            {loanApplication.loanStatus === 'Pending' && loanApplication.paymentStatus !== 'paid' ? (
+                                                <button
+                                                    onClick={() => handleDelete(loanApplication._id)}
+                                                    className="btn btn-xs sm:btn-sm btn-ghost hover:btn-error rounded-full"
+                                                    title="Delete Order"
+                                                >
+                                                    <RiDeleteBin6Line className="text-base sm:text-lg" />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    disabled
+                                                    className="btn btn-xs sm:btn-sm btn-ghost opacity-40 cursor-not-allowed rounded-full"
+                                                >
+                                                    <RiDeleteBin6Line className="text-base sm:text-lg" />
+                                                </button>
+                                            )}
 
-	return (
-		<div>
-			<div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-				{loanApplications.length === 0 ? (
-					<p className="font-semibold text-2xl text-center mt-5">
-						NO application yet
-					</p>
-				) : (
-					<table className="table">
-						{/* head */}
-						<thead>
-							<tr>
-								<th></th>
-								<th>Loan ID</th>
-								<th>Loan Info</th>
-								<th>Amount</th>
-								<th>Status</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							{loanApplications.map((loanApplication, i) => (
-								<tr key={loanApplication._id}>
-									<th>{i + 1}</th>
-									<td>{loanApplication.loanId}</td>
-									<td>{loanApplication.loanTitle}</td>
-									<td>{loanApplication.loanAmount}</td>
-									<td>{loanApplication.loanStatus}</td>
-									<td className=" flex gap-1">
-										<div className="flex justify-center items-center">
-											{loanApplication.paymentStatus === 'paid' ? (
-												<p className=" text-center text-green-800 font-bold mr-2 p-2">
-													Paid
-												</p>
-											) : (
-												<button
-													onClick={() => handlePayment(loanApplication)}
-													className="btn btn-secondary text-white"
-												>
-													Pay
-												</button>
-											)}
-										</div>
+                                            <button
+                                                onClick={() => openLoanModal(loanApplication)}
+                                                className="btn btn-xs sm:btn-sm btn-outline rounded-full"
+                                                title="View Details"
+                                            >
+                                                <FcViewDetails className="text-base sm:text-lg" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
 
-										{loanApplication.loanStatus == 'Pending' ? (
-											<button
-												onClick={() => handleDelete(loanApplication._id)}
-												className="btn hover:btn-warning"
-											>
-												<RiDeleteBin6Line />
-											</button>
-										) : (
-											<button
-												disabled
-												onClick={() => handleDelete(loanApplication._id)}
-												className="btn hover:btn-warning"
-											>
-												<RiDeleteBin6Line />
-											</button>
-										)}
+            {/* view details modal */}
+            <dialog ref={loanModalRef} className="modal modal-bottom sm:modal-middle">
+                <div className="modal-box w-full max-w-md bg-white dark:bg-zinc-900 text-gray-900 dark:text-white rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-white/10">
+                    <h3 className="font-bold text-xl mb-4 text-center">Product Details</h3>
 
-										<button
-											onClick={() => openLoanModal(loanApplication)}
-											className="btn"
-										>
-											<FcViewDetails />
-										</button>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				)}
-			</div>
+                    {data ? (
+                        <div className="card bg-gray-50 dark:bg-zinc-800 shadow-inner border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
+                            <figure className="px-4 pt-4 overflow-hidden rounded-t-2xl w-full flex justify-center bg-black">
+                                <img
+                                    src={data.images || data.image}
+                                    alt={data.title}
+                                    className="rounded-xl max-h-48 object-cover w-full"
+                                />
+                            </figure>
 
-			{/* view details modal */}
-			<dialog ref={loanModalRef} className="modal modal-bottom sm:modal-middle">
-				<div className="modal-box w-full max-w-md overflow-auto">
-					<h3 className="font-bold text-lg mb-4 text-center">Loan Details</h3>
+                            <div className="p-4 flex flex-wrap justify-center gap-2 text-center">
+                                <div className="badge badge-outline border-primary text-primary">
+                                    Category: {data.category}
+                                </div>
+                                <div className="badge badge-outline border-secondary text-secondary">
+                                    Price: ${data.price || data.maxLimit}
+                                </div>
+                                <div className="badge badge-outline border-accent text-accent">
+                                    Stock: {data.stock || 'Available'}
+                                </div>
+                            </div>
 
-					{data ? (
-						<div className="card bg-base-100 shadow-md border border-gray-100 rounded-xl">
-							<figure className="px-4 pt-4 overflow-hidden rounded-t-xl w-full flex justify-center">
-								<img
-									src={data.images}
-									alt={data.title}
-									className="rounded-xl max-h-48 object-cover"
-								/>
-							</figure>
+                            <div className="card-body items-center text-center px-4 pb-6">
+                                <h2 className="text-2xl font-bold">
+                                    {data.title}
+                                </h2>
+                                <p className="text-gray-500 dark:text-gray-300 text-sm mt-2 leading-relaxed">
+                                    {data.description}
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="py-12"><Loading></Loading></div>
+                    )}
 
-							<div className="p-4 flex flex-wrap justify-center gap-2 text-center">
-								<div className="badge badge-outline border-blue-500 text-blue-600">
-									Category: {data.category}
-								</div>
-								<div className="badge badge-outline border-teal-500 text-teal-600">
-									Interest: {data.interestRate}
-								</div>
-								<div className="badge badge-outline border-blue-400 text-blue-500">
-									Limit: ${data.maxLimit}
-								</div>
-								<div className="badge badge-outline border-blue-400 text-blue-500">
-									EMI: {data.emiPlans}
-								</div>
-							</div>
-
-							<div className="card-body items-center text-center px-4 pb-4">
-								<h2 className="text-2xl font-bold text-blue-700">
-									{data.title}
-								</h2>
-								<p className="text-gray-600 text-base mt-2">
-									{data.description}
-								</p>
-							</div>
-						</div>
-					) : (
-						<div><Loading></Loading></div>
-					)}
-
-					<div className="modal-action mt-2 justify-center">
-						<form method="dialog">
-							<button className="btn btn-primary">Close</button>
-						</form>
-					</div>
-				</div>
-			</dialog>
-		</div>
-	);
+                    <div className="modal-action mt-6 justify-center">
+                        <form method="dialog">
+                            <button className="btn btn-primary rounded-full px-6">Close</button>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+        </div>
+    );
 };
 
 export default MyLoans;

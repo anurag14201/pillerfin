@@ -16,6 +16,7 @@ import PaymentSuccess from '../Pages/Home/DashBoard/Payment/PaymentSuccess';
 import PaymentCancel from '../Pages/Home/DashBoard/Payment/PaymentCancel';
 import Profile from '../Pages/Home/DashBoard/Profile/Profile';
 import ManageUsers from '../Pages/Home/DashBoard/Admin/ManageUsers';
+import AdminHome from '../Pages/Home/DashBoard/AdminHome';
 import AllLoansAdmin from '../Pages/Home/DashBoard/Admin/AllLoansAdmin';
 import LoanApplicationAdmin from '../Pages/Home/DashBoard/Admin/LoanApplicationAdmin';
 import AddLoans from '../Pages/Home/DashBoard/Manager/AddLoans';
@@ -114,6 +115,20 @@ export const router = createBrowserRouter([
 			{
 				path: 'payment-cancel',
 				Component: PaymentCancel,
+			},
+
+			{
+				index: true,
+				element: <AdminHome />,
+			},
+
+			{
+				path: 'add-loans', // Make sure this matches your Add Product sidebar Link (e.g., 'add-loan' or 'add-loans')
+				element: <AddLoans />,
+			},
+			{
+				path: 'manage-loans', // Make sure this matches your Manage Products sidebar Link
+				element: <ManageLoans />,
 			},
 			{
 				path: 'manage-users',

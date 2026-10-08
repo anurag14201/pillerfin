@@ -1,18 +1,18 @@
 import React from 'react';
 import HeroBanner from '../HeroBanner/HeroBanner';
-import AvailableLoans from '../AvailableLoans/AvailableLoans';
+import AvailableProducts from '../AvailableProducts/AvailableProducts';
 import HowItWorks from '../HowItWorks/HowItWorks';
 import CustomerFeedback from '../CustomerFeedback/CustomerFeedback';
-import AboutLoanLink from '../AboutLoanLink/AboutLoanLink';
+import AboutAura from '../AboutAura/AboutAura';
 
 const Home = () => {
     return (
         <div>
             <HeroBanner></HeroBanner>
-            <AvailableLoans></AvailableLoans>
+            <AvailableProducts></AvailableProducts>
             <HowItWorks></HowItWorks>
             <CustomerFeedback></CustomerFeedback>
-            <AboutLoanLink></AboutLoanLink>
+            <AboutAura></AboutAura>
         </div>
     );
 };

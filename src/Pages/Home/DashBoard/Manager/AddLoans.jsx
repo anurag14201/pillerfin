@@ -8,186 +8,195 @@ import { useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 
 const AddLoans = () => {
-    const {user} = useAuth()
-	const axiosSecure = useAxiosSecure();
-    const [loading, setLoading] = useState();
-	const navigate = useNavigate()
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm();
+    const { user } = useAuth();
+    const axiosSecure = useAxiosSecure();
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm();
 
-	const handleAddLoan = data => {
-        setLoading(true)
-		const profileImg = data.images[0];
-		const formData = new FormData();
-		formData.append('image', profileImg);
-		const imageBB_API_URL = `https://api.imgbb.com/1/upload?key=${
-			import.meta.env.VITE_image_host_Key
-		}`;
-		axios.post(imageBB_API_URL, formData).then(res => {
-			const photoURL = res.data.data.url;
+    const handleAddLoan = async (data) => {
+        setLoading(true);
+        try {
+            const profileImg = data.images[0];
+            const formData = new FormData();
+            formData.append('image', profileImg);
+            const imageBB_API_URL = `https://api.imgbb.com/1/upload?key=${
+                import.meta.env.VITE_image_host_Key
+            }`;
+            
+            const imageRes = await axios.post(imageBB_API_URL, formData);
+            const photoURL = imageRes.data.data.url;
 
-			const payload = {
-				...data,
-				requiredDocuments: ['NID', 'Photo'],
-				emiPlans: `${data.emiMonths} months`,
-				showOnHome: data.showOnHome === 'true',
-				images: photoURL,
-			};
-			delete payload.emiMonths;
+            const payload = {
+                ...data,
+                requiredDocuments: data.requiredDocuments ? data.requiredDocuments.split(',').map(doc => doc.trim()) : ['NID', 'Photo'],
+                emiPlans: `${data.emiMonths} months`,
+                showOnHome: data.showOnHome === 'true',
+                images: photoURL,
+            };
+            delete payload.emiMonths;
 
-			axiosSecure.post(`/all-loans?email=${user.email}`, payload)
-			.then(()=>{
-                
-				
-				Swal.fire({
-					position: 'top-end',
-					icon: 'success',
-					title: 'Loan Created Successfully!!!',
-					showConfirmButton: false,
-					timer: 1000,
-				});
+            await axiosSecure.post(`/all-loans?email=${user?.email}`, payload);
+            
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Product Created Successfully!!!',
+                showConfirmButton: false,
+                timer: 1500,
+            });
 
-                setLoading(false);
-				navigate('/dashboard/manage-loans');
-            })			
-		});
+            navigate('/dashboard/manage-loans');
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong while adding the product!',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-	};
-
-    if(loading){
-        return <Loading></Loading>
+    if (loading) {
+        return <Loading />;
     }
 
-	return (
-		<div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
-			<form
-				onSubmit={handleSubmit(handleAddLoan)}
-				className="w-full max-w-4xl bg-base-100 shadow-xl rounded-2xl"
-			>
-				<h2 className="text-2xl font-bold text-center pt-6">Add New Loan</h2>
-				<div className=" grid grid-cols-1 md:grid-cols-2 items-center">
-					<fieldset className="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
-						{/* Loan title */}
-						<label className="label">Loan Title</label>
-						<input
-							type="text"
-							{...register('title', { required: true })}
-							className="input"
-							placeholder="Loan Title"
-						/>
-						{errors.title?.type === 'required' && (
-							<span className="text-red-500">is required</span>
-						)}
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black py-12 px-4">
+            <form
+                onSubmit={handleSubmit(handleAddLoan)}
+                className="w-full max-w-3xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 shadow-2xl rounded-3xl p-8"
+            >
+                <h2 className="text-3xl font-bold text-center mb-8">Add New Product / Loan</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Loan Title */}
+                    <div className="form-control">
+                        <label className="label font-medium">Title</label>
+                        <input
+                            type="text"
+                            {...register('title', { required: true })}
+                            className="input input-bordered w-full bg-zinc-800/50"
+                            placeholder="Product / Loan Title"
+                        />
+                        {errors.title && <span className="text-red-500 text-sm mt-1">Title is required</span>}
+                    </div>
 
-						{/* description */}
-						<label className="label">Description</label>
-						<input
-							{...register('description', { required: true })}
-							type="text"
-							className="input"
-							placeholder="Description"
-						/>
-						{errors.description?.type === 'required' && (
-							<span className="text-red-500">Description is required</span>
-						)}
-						{/* Category */}
-						<label className="label">Category</label>
-						<input
-							type="text"
-							{...register('category', { required: true })}
-							className="input"
-							placeholder="Category"
-						/>
-						{errors.category?.type === 'required' && (
-							<span className="text-red-500">Category is required</span>
-						)}
-						{/* interest rate */}
-						<label className="label">interest rate</label>
-						<input
-							type="text"
-							{...register('interestRate', { required: true })}
-							className="input"
-							placeholder="interest rate"
-						/>
-						{errors.interestRate?.type === 'required' && (
-							<span className="text-red-500">Interest Rate is required</span>
-						)}
+                    {/* Category */}
+                    <div className="form-control">
+                        <label className="label font-medium">Category</label>
+                        <input
+                            type="text"
+                            {...register('category', { required: true })}
+                            className="input input-bordered w-full bg-zinc-800/50"
+                            placeholder="Category"
+                        />
+                        {errors.category && <span className="text-red-500 text-sm mt-1">Category is required</span>}
+                    </div>
 
-						{/* max loan limit */}
-						<label className="label">Max loan limit</label>
-						<input
-							type="text"
-							{...register('maxLimit', { required: true })}
-							className="input"
-							placeholder="Max loan limit"
-						/>
-						{errors.maxLimit?.type === 'required' && (
-							<span className="text-red-500">Max limit is required</span>
-						)}
+                    {/* Interest Rate / Price */}
+                    <div className="form-control">
+                        <label className="label font-medium">Interest Rate / Price</label>
+                        <input
+                            type="text"
+                            {...register('interestRate', { required: true })}
+                            className="input input-bordered w-full bg-zinc-800/50"
+                            placeholder="e.g. 12% or $299"
+                        />
+                        {errors.interestRate && <span className="text-red-500 text-sm mt-1">Interest rate/price is required</span>}
+                    </div>
 
-						{/* required documents */}
-						<label className="label">Required documents</label>
-						<input
-							type="text"
-							{...register('requiredDocuments', { required: true })}
-							value="NID, Photo"
-							className="input"
-							placeholder="Contact Number"
-						/>
+                    {/* Max Loan Limit / Stock */}
+                    <div className="form-control">
+                        <label className="label font-medium">Max Limit / Price Limit</label>
+                        <input
+                            type="text"
+                            {...register('maxLimit', { required: true })}
+                            className="input input-bordered w-full bg-zinc-800/50"
+                            placeholder="Max limit amount"
+                        />
+                        {errors.maxLimit && <span className="text-red-500 text-sm mt-1">Max limit is required</span>}
+                    </div>
 
-						{/* EMI plans */}
-						<label className="label">EMI plans</label>
-						<input
-							type="number"
-							{...register('emiMonths', { required: true })}
-							className="input"
-							placeholder="Enter number of months"
-						/>
-						{errors.emiMonths?.type === 'required' && (
-							<span className="text-red-500">EMI is required</span>
-						)}
+                    {/* Required Documents */}
+                    <div className="form-control">
+                        <label className="label font-medium">Required Documents (comma separated)</label>
+                        <input
+                            type="text"
+                            {...register('requiredDocuments')}
+                            defaultValue="NID, Photo"
+                            className="input input-bordered w-full bg-zinc-800/50"
+                            placeholder="NID, Photo, Income Certificate"
+                        />
+                    </div>
 
-						{/* photo image field */}
-						<label className="label">Photo</label>
-						<input
-							type="file"
-							{...register('images', { required: true })}
-							className="file-input"
-							placeholder="Your Photo"
-						/>
-						{errors.images?.type === 'required' && (
-							<span className="text-red-500">Images is required</span>
-						)}
-						{/* showOnHome */}
-						<label className="label">Show On Home</label>
-						<select
-							{...register('showOnHome', { required: true })}
-							className="select"
-						>
-							<option value="">Select</option>
-							<option value="true">Yes</option>
-							<option value="false">No</option>
-						</select>
-						{errors.showOnHome?.type === 'required' && (
-							<span className="text-red-500">Show On Home is required</span>
-						)}
-					</fieldset>
-				</div>
+                    {/* EMI Plans */}
+                    <div className="form-control">
+                        <label className="label font-medium">EMI Months</label>
+                        <input
+                            type="number"
+                            {...register('emiMonths', { required: true })}
+                            className="input input-bordered w-full bg-zinc-800/50"
+                            placeholder="Enter number of months"
+                        />
+                        {errors.emiMonths && <span className="text-red-500 text-sm mt-1">EMI months required</span>}
+                    </div>
 
-				<div className="flex justify-center pb-6">
-					<input
-						className="btn btn-primary my-2 ml-5"
-						type="submit"
-						value={loading ? 'submitting' : 'Submit Loan'}
-						disabled={loading}
-					/>
-				</div>
-			</form>
-		</div>
-	);
+                    {/* Photo Image Field */}
+                    <div className="form-control">
+                        <label className="label font-medium">Product Image</label>
+                        <input
+                            type="file"
+                            {...register('images', { required: true })}
+                            className="file-input file-input-bordered w-full bg-zinc-800/50"
+                        />
+                        {errors.images && <span className="text-red-500 text-sm mt-1">Image file is required</span>}
+                    </div>
+
+                    {/* Show On Home */}
+                    <div className="form-control">
+                        <label className="label font-medium">Show On Home</label>
+                        <select
+                            {...register('showOnHome', { required: true })}
+                            className="select select-bordered w-full bg-zinc-800/50"
+                        >
+                            <option value="">Select visibility</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                        {errors.showOnHome && <span className="text-red-500 text-sm mt-1">Selection required</span>}
+                    </div>
+                </div>
+
+                {/* Description (Full Width) */}
+                <div className="form-control mt-4">
+                    <label className="label font-medium">Description</label>
+                    <textarea
+                        {...register('description', { required: true })}
+                        className="textarea textarea-bordered h-24 w-full bg-zinc-800/50"
+                        placeholder="Detailed description..."
+                    ></textarea>
+                    {errors.description && <span className="text-red-500 text-sm mt-1">Description is required</span>}
+                </div>
+
+                <div className="flex justify-center mt-8">
+                    <button
+                        className="btn btn-primary px-8 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition-transform"
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? 'Submitting...' : 'Submit Product'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
 };
 
 export default AddLoans;

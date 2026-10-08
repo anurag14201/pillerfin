@@ -59,7 +59,7 @@ const ManageLoans = () => {
 	return (
 		<div className="overflow-x-auto">
 			<h1 className="text-3xl m-5 text-center">
-				Loans Created By Me ({managerCreatedLoans.length})
+				Prosucts Created By Me ({managerCreatedLoans.length})
 			</h1>
 
 			
