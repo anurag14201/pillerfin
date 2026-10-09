@@ -4,8 +4,8 @@ import useAuth from './useAuth';
 import { useNavigate } from 'react-router';
 
 const axiosSecure = axios.create({
-	baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
-});
+	baseURL: import.meta.env.VITE_API_URL || 'https://pillerfin-server.onrender.com',
+  });
 
 const useAxiosSecure = () => {
 	const { user, logOut } = useAuth();
